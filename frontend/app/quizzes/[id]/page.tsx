@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { getQuizById, type Quiz } from "@/lib/api";
+import { getQuizById, type Quiz, type QuestionType } from "@/lib/api";
+import styles from "./quiz-details.module.css";
 
 type UserAnswers = Record<number, string | boolean | number[]>;
 
@@ -14,19 +15,28 @@ export default function QuizDetailsPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [answers, setAnswers] = useState<UserAnswers>({});
   const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchQuiz = async () => {
-      if (Number.isNaN(id)) return;
+      try {
+        if (Number.isNaN(id)) {
+          setError("Invalid quiz id.");
+          return;
+        }
 
-      const data = await getQuizById(id);
-      setQuiz(data);
+        const data = await getQuizById(id);
+        setQuiz(data);
+      } catch {
+        setError("Failed to load quiz.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchQuiz();
   }, [id]);
-
-  if (!quiz) return <p>Loading...</p>;
 
   const updateAnswer = (
     questionId: number,
@@ -34,8 +44,8 @@ export default function QuizDetailsPage() {
   ) => {
     if (showResults) return;
 
-    setAnswers((prev) => ({
-      ...prev,
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
       [questionId]: value,
     }));
   };
@@ -43,8 +53,10 @@ export default function QuizDetailsPage() {
   const toggleCheckboxAnswer = (questionId: number, optionId: number) => {
     if (showResults) return;
 
-    const currentAnswers = answers[questionId];
-    const selectedOptions = Array.isArray(currentAnswers) ? currentAnswers : [];
+    const currentAnswer = answers[questionId];
+    const selectedOptions: number[] = Array.isArray(currentAnswer)
+      ? (currentAnswer as number[])
+      : [];
 
     const nextSelectedOptions = selectedOptions.includes(optionId)
       ? selectedOptions.filter((id) => id !== optionId)
@@ -75,7 +87,7 @@ export default function QuizDetailsPage() {
         .sort();
 
       const selectedOptionIds = Array.isArray(userAnswer)
-        ? [...userAnswer].sort()
+        ? [...(userAnswer as number[])].sort()
         : [];
 
       return (
@@ -108,117 +120,173 @@ export default function QuizDetailsPage() {
     return "";
   };
 
+  const questionTypeLabels: Record<QuestionType, string> = {
+    input: "Write your answer",
+    boolean: "True or False",
+    checkbox: "Multiple choice",
+  };
+
+  if (isLoading) {
+    return (
+      <main className={styles.page}>
+        <p className={styles.stateText}>Loading quiz...</p>
+      </main>
+    );
+  }
+
+  if (error || !quiz) {
+    return (
+      <main className={styles.page}>
+        <Link href="/quizzes" className={styles.backLink}>
+          ← Back to quizzes
+        </Link>
+        <p className={styles.errorText}>{error || "Quiz not found."}</p>
+      </main>
+    );
+  }
+
   const correctAnswersCount = quiz.questions.filter(isCorrectAnswer).length;
 
   return (
-    <main>
-      <Link href="/quizzes">← Back to quizzes</Link>
+    <main className={styles.page}>
+      <Link href="/quizzes" className={styles.backLink}>
+        ← Back to quizzes
+      </Link>
 
-      <h1>{quiz.title}</h1>
-
-      {quiz.questions.map((question, index) => {
-        const isCorrect = isCorrectAnswer(question);
-
-        return (
-          <section key={question.id}>
-            <h2>
-              {index + 1}. {question.text}
-            </h2>
-
-            {question.type === "input" && (
-              <input
-                placeholder="Your answer"
-                disabled={showResults}
-                value={
-                  typeof answers[question.id] === "string"
-                    ? (answers[question.id] as string)
-                    : ""
-                }
-                onChange={(event) =>
-                  updateAnswer(question.id, event.target.value)
-                }
-              />
-            )}
-
-            {question.type === "boolean" && (
-              <div>
-                <label>
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    disabled={showResults}
-                    checked={answers[question.id] === true}
-                    onChange={() => updateAnswer(question.id, true)}
-                  />
-                  True
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    disabled={showResults}
-                    checked={answers[question.id] === false}
-                    onChange={() => updateAnswer(question.id, false)}
-                  />
-                  False
-                </label>
-              </div>
-            )}
-
-            {question.type === "checkbox" && (
-              <div>
-                {question.options.map((option) => {
-                  const selectedOptions: number[] = Array.isArray(
-                    answers[question.id],
-                  )
-                    ? (answers[question.id] as number[])
-                    : [];
-
-                  return (
-                    <label key={option.id} style={{ display: "block" }}>
-                      <input
-                        type="checkbox"
-                        disabled={showResults}
-                        checked={selectedOptions.includes(option.id)}
-                        onChange={() =>
-                          toggleCheckboxAnswer(question.id, option.id)
-                        }
-                      />
-                      {option.text}
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-
-            {showResults && (
-              <div>
-                <p>{isCorrect ? "Correct" : "Incorrect"}</p>
-
-                {!isCorrect && (
-                  <p>
-                    Correct answer:{" "}
-                    <strong>{getCorrectAnswer(question)}</strong>
-                  </p>
-                )}
-              </div>
-            )}
-          </section>
-        );
-      })}
-
-      {!showResults && (
-        <button type="button" onClick={() => setShowResults(true)}>
-          Check answers
-        </button>
-      )}
-
-      {showResults && (
-        <p>
-          Result: {correctAnswersCount} / {quiz.questions.length}
+      <section className={styles.header}>
+        <p className={styles.badge}>Quiz</p>
+        <h1 className={styles.title}>{quiz.title}</h1>
+        <p className={styles.description}>
+          Answer all questions and check your result at the end.
         </p>
-      )}
+      </section>
+
+      <section className={styles.questions}>
+        {quiz.questions.map((question, index) => {
+          const isCorrect = isCorrectAnswer(question);
+          const inputValue =
+            typeof answers[question.id] === "string"
+              ? (answers[question.id] as string)
+              : "";
+
+          return (
+            <article className={styles.card} key={question.id}>
+              <div className={styles.questionTop}>
+                <span className={styles.questionNumber}>
+                  Question {index + 1}
+                </span>
+                <span className={styles.questionType}>
+                  {questionTypeLabels[question.type]}
+                </span>
+              </div>
+
+              <h2 className={styles.questionText}>{question.text}</h2>
+
+              {question.type === "input" && (
+                <input
+                  className={styles.input}
+                  placeholder="Your answer"
+                  disabled={showResults}
+                  value={inputValue}
+                  onChange={(event) =>
+                    updateAnswer(question.id, event.target.value)
+                  }
+                />
+              )}
+
+              {question.type === "boolean" && (
+                <div className={styles.options}>
+                  <label className={styles.optionLabel}>
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      disabled={showResults}
+                      checked={answers[question.id] === true}
+                      onChange={() => updateAnswer(question.id, true)}
+                    />
+                    True
+                  </label>
+
+                  <label className={styles.optionLabel}>
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      disabled={showResults}
+                      checked={answers[question.id] === false}
+                      onChange={() => updateAnswer(question.id, false)}
+                    />
+                    False
+                  </label>
+                </div>
+              )}
+
+              {question.type === "checkbox" && (
+                <div className={styles.options}>
+                  {question.options.map((option) => {
+                    const selectedOptions: number[] = Array.isArray(
+                      answers[question.id],
+                    )
+                      ? (answers[question.id] as number[])
+                      : [];
+
+                    return (
+                      <label className={styles.optionLabel} key={option.id}>
+                        <input
+                          type="checkbox"
+                          disabled={showResults}
+                          checked={selectedOptions.includes(option.id)}
+                          onChange={() =>
+                            toggleCheckboxAnswer(question.id, option.id)
+                          }
+                        />
+                        {option.text}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+
+              {showResults && (
+                <div
+                  className={
+                    isCorrect ? styles.correctResult : styles.incorrectResult
+                  }
+                >
+                  <p className={styles.resultText}>
+                    {isCorrect ? "Correct" : "Incorrect"}
+                  </p>
+
+                  {!isCorrect && (
+                    <p className={styles.correctAnswer}>
+                      Correct answer:{" "}
+                      <strong>{getCorrectAnswer(question)}</strong>
+                    </p>
+                  )}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </section>
+
+      <section className={styles.footer}>
+        {!showResults ? (
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={() => setShowResults(true)}
+          >
+            Check answers
+          </button>
+        ) : (
+          <div className={styles.scoreCard}>
+            <p className={styles.scoreLabel}>Your result</p>
+            <p className={styles.scoreValue}>
+              {correctAnswersCount} / {quiz.questions.length}
+            </p>
+          </div>
+        )}
+      </section>
     </main>
   );
 }
