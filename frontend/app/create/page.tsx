@@ -4,6 +4,8 @@ import { FieldArray, Form, Formik, getIn } from "formik";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { createQuiz } from "@/lib/api";
+import styles from "./create.module.css";
+import Link from "next/link";
 
 type QuestionType = "boolean" | "input" | "checkbox";
 
@@ -90,104 +92,146 @@ export default function CreatePage() {
   };
 
   return (
-    <div>
-      <h1>Create Quiz</h1>
+    <main className={styles.page}>
+      <Link href="/quizzes" className={styles.backLink}>
+        ← Back
+      </Link>
+      <section className={styles.header}>
+        <p className={styles.badge}>Quiz builder</p>
+        <h1 className={styles.title}>Create a new quiz</h1>
+        <p className={styles.description}>
+          Add different question types, mark correct answers and save your quiz.
+        </p>
+      </section>
 
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ values, errors, touched, handleChange, setFieldValue }) => (
-          <Form>
-            <div>
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          setFieldValue,
+          isSubmitting,
+        }) => (
+          <Form className={styles.form}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label} htmlFor="title">
+                Quiz title
+              </label>
               <input
+                id="title"
                 name="title"
-                placeholder="Quiz title"
+                className={styles.input}
+                placeholder="e.g. JavaScript basics"
                 value={values.title}
                 onChange={handleChange}
               />
               {getIn(touched, "title") && getIn(errors, "title") && (
-                <p>{getIn(errors, "title")}</p>
+                <p className={styles.error}>{getIn(errors, "title")}</p>
               )}
             </div>
 
             <FieldArray name="questions">
               {({ push, remove }) => (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => push({ ...initialQuestion })}
-                  >
-                    Add question
-                  </button>
+                <div className={styles.questions}>
+                  <div className={styles.sectionTop}>
+                    <h2 className={styles.sectionTitle}>Questions</h2>
+                    <button
+                      className={styles.secondaryButton}
+                      type="button"
+                      onClick={() => push({ ...initialQuestion })}
+                    >
+                      Add question
+                    </button>
+                  </div>
 
                   {values.questions.map((question, questionIndex) => (
-                    <div
-                      key={questionIndex}
-                      style={{
-                        border: "1px solid #ddd",
-                        padding: "12px",
-                        margin: "12px 0",
-                      }}
-                    >
-                      <input
-                        name={`questions.${questionIndex}.text`}
-                        placeholder="Question text"
-                        value={question.text}
-                        onChange={handleChange}
-                      />
+                    <article className={styles.card} key={questionIndex}>
+                      <div className={styles.cardTop}>
+                        <h3 className={styles.cardTitle}>
+                          Question {questionIndex + 1}
+                        </h3>
 
-                      {getIn(touched, `questions.${questionIndex}.text`) &&
-                        getIn(errors, `questions.${questionIndex}.text`) && (
-                          <p>
-                            {getIn(errors, `questions.${questionIndex}.text`)}
-                          </p>
+                        {values.questions.length > 1 && (
+                          <button
+                            className={styles.dangerButton}
+                            type="button"
+                            onClick={() => remove(questionIndex)}
+                          >
+                            Remove
+                          </button>
                         )}
+                      </div>
 
-                      <select
-                        name={`questions.${questionIndex}.type`}
-                        value={question.type}
-                        onChange={(event) => {
-                          const type = event.target.value as QuestionType;
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.label}>Question text</label>
+                        <input
+                          className={styles.input}
+                          name={`questions.${questionIndex}.text`}
+                          placeholder="Enter question"
+                          value={question.text}
+                          onChange={handleChange}
+                        />
+                        {getIn(touched, `questions.${questionIndex}.text`) &&
+                          getIn(errors, `questions.${questionIndex}.text`) && (
+                            <p className={styles.error}>
+                              {getIn(errors, `questions.${questionIndex}.text`)}
+                            </p>
+                          )}
+                      </div>
 
-                          setFieldValue(
-                            `questions.${questionIndex}.type`,
-                            type,
-                          );
-                          setFieldValue(
-                            `questions.${questionIndex}.answerText`,
-                            type === "input" ? "" : undefined,
-                          );
-                          setFieldValue(
-                            `questions.${questionIndex}.answerBoolean`,
-                            type === "boolean" ? true : undefined,
-                          );
-                          setFieldValue(
-                            `questions.${questionIndex}.options`,
-                            type === "checkbox"
-                              ? [
-                                  { text: "", isCorrect: false },
-                                  { text: "", isCorrect: false },
-                                ]
-                              : [],
-                          );
-                        }}
-                      >
-                        <option value="input">Input</option>
-                        <option value="boolean">Boolean</option>
-                        <option value="checkbox">Checkbox</option>
-                      </select>
+                      <div className={styles.fieldGroup}>
+                        <label className={styles.label}>Question type</label>
+                        <select
+                          className={styles.input}
+                          name={`questions.${questionIndex}.type`}
+                          value={question.type}
+                          onChange={(event) => {
+                            const type = event.target.value as QuestionType;
+
+                            setFieldValue(
+                              `questions.${questionIndex}.type`,
+                              type,
+                            );
+                            setFieldValue(
+                              `questions.${questionIndex}.answerText`,
+                              type === "input" ? "" : undefined,
+                            );
+                            setFieldValue(
+                              `questions.${questionIndex}.answerBoolean`,
+                              type === "boolean" ? true : undefined,
+                            );
+                            setFieldValue(
+                              `questions.${questionIndex}.options`,
+                              type === "checkbox"
+                                ? [
+                                    { text: "", isCorrect: false },
+                                    { text: "", isCorrect: false },
+                                  ]
+                                : [],
+                            );
+                          }}
+                        >
+                          <option value="input">Short text answer</option>
+                          <option value="boolean">True / False</option>
+                          <option value="checkbox">Multiple choice</option>
+                        </select>
+                      </div>
 
                       {question.type === "input" && (
-                        <div>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.label}>Correct answer</label>
                           <input
+                            className={styles.input}
                             name={`questions.${questionIndex}.answerText`}
-                            placeholder="Correct answer"
+                            placeholder="Enter correct answer"
                             value={question.answerText ?? ""}
                             onChange={handleChange}
                           />
-
                           {getIn(
                             touched,
                             `questions.${questionIndex}.answerText`,
@@ -196,7 +240,7 @@ export default function CreatePage() {
                               errors,
                               `questions.${questionIndex}.answerText`,
                             ) && (
-                              <p>
+                              <p className={styles.error}>
                                 {getIn(
                                   errors,
                                   `questions.${questionIndex}.answerText`,
@@ -207,8 +251,8 @@ export default function CreatePage() {
                       )}
 
                       {question.type === "boolean" && (
-                        <div>
-                          <label>
+                        <div className={styles.radioGroup}>
+                          <label className={styles.optionLabel}>
                             <input
                               type="radio"
                               checked={question.answerBoolean === true}
@@ -222,7 +266,7 @@ export default function CreatePage() {
                             True
                           </label>
 
-                          <label>
+                          <label className={styles.optionLabel}>
                             <input
                               type="radio"
                               checked={question.answerBoolean === false}
@@ -241,26 +285,34 @@ export default function CreatePage() {
                       {question.type === "checkbox" && (
                         <FieldArray name={`questions.${questionIndex}.options`}>
                           {({ push: pushOption, remove: removeOption }) => (
-                            <div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  pushOption({ text: "", isCorrect: false })
-                                }
-                              >
-                                Add option
-                              </button>
+                            <div className={styles.options}>
+                              <div className={styles.sectionTop}>
+                                <h4 className={styles.smallTitle}>Options</h4>
+                                <button
+                                  className={styles.secondaryButton}
+                                  type="button"
+                                  onClick={() =>
+                                    pushOption({ text: "", isCorrect: false })
+                                  }
+                                >
+                                  Add option
+                                </button>
+                              </div>
 
                               {question.options.map((option, optionIndex) => (
-                                <div key={optionIndex}>
+                                <div
+                                  className={styles.optionRow}
+                                  key={optionIndex}
+                                >
                                   <input
+                                    className={styles.input}
                                     name={`questions.${questionIndex}.options.${optionIndex}.text`}
-                                    placeholder="Option text"
+                                    placeholder={`Option ${optionIndex + 1}`}
                                     value={option.text}
                                     onChange={handleChange}
                                   />
 
-                                  <label>
+                                  <label className={styles.checkboxLabel}>
                                     <input
                                       type="checkbox"
                                       checked={option.isCorrect}
@@ -276,10 +328,11 @@ export default function CreatePage() {
 
                                   {question.options.length > 2 && (
                                     <button
+                                      className={styles.dangerButton}
                                       type="button"
                                       onClick={() => removeOption(optionIndex)}
                                     >
-                                      Remove option
+                                      Remove
                                     </button>
                                   )}
 
@@ -291,7 +344,7 @@ export default function CreatePage() {
                                       errors,
                                       `questions.${questionIndex}.options.${optionIndex}.text`,
                                     ) && (
-                                      <p>
+                                      <p className={styles.error}>
                                         {getIn(
                                           errors,
                                           `questions.${questionIndex}.options.${optionIndex}.text`,
@@ -305,7 +358,7 @@ export default function CreatePage() {
                                 errors,
                                 `questions.${questionIndex}.options`,
                               ) === "string" && (
-                                <p>
+                                <p className={styles.error}>
                                   {getIn(
                                     errors,
                                     `questions.${questionIndex}.options`,
@@ -316,25 +369,22 @@ export default function CreatePage() {
                           )}
                         </FieldArray>
                       )}
-
-                      {values.questions.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => remove(questionIndex)}
-                        >
-                          Remove question
-                        </button>
-                      )}
-                    </div>
+                    </article>
                   ))}
                 </div>
               )}
             </FieldArray>
 
-            <button type="submit">Create quiz</button>
+            <button
+              className={styles.primaryButton}
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating..." : "Create quiz"}
+            </button>
           </Form>
         )}
       </Formik>
-    </div>
+    </main>
   );
 }
