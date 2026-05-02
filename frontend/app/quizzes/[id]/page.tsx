@@ -8,6 +8,12 @@ import styles from "./quiz-details.module.css";
 
 type UserAnswers = Record<number, string | boolean | number[]>;
 
+const questionTypeLabels: Record<QuestionType, string> = {
+  input: "Write your answer",
+  boolean: "True or False",
+  checkbox: "Multiple choice",
+};
+
 export default function QuizDetailsPage() {
   const params = useParams();
   const id = Number(params.id);
@@ -118,12 +124,6 @@ export default function QuizDetailsPage() {
     }
 
     return "";
-  };
-
-  const questionTypeLabels: Record<QuestionType, string> = {
-    input: "Write your answer",
-    boolean: "True or False",
-    checkbox: "Multiple choice",
   };
 
   if (isLoading) {

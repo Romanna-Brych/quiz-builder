@@ -1,26 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { FieldArray, Form, Formik, getIn } from "formik";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
-import { createQuiz } from "@/lib/api";
+import {
+  createQuiz,
+  type CreateQuizQuestion,
+  type QuestionType,
+} from "@/lib/api";
 import styles from "./create.module.css";
-import Link from "next/link";
 
-type QuestionType = "boolean" | "input" | "checkbox";
-
-type QuizOption = {
-  text: string;
-  isCorrect: boolean;
-};
-
-type Question = {
-  text: string;
-  type: QuestionType;
-  answerText?: string;
-  answerBoolean?: boolean;
-  options: QuizOption[];
-};
+type Question = CreateQuizQuestion;
 
 type QuizFormValues = {
   title: string;
@@ -96,6 +87,7 @@ export default function CreatePage() {
       <Link href="/" className={styles.backLink}>
         ← Back
       </Link>
+
       <section className={styles.header}>
         <p className={styles.badge}>Quiz builder</p>
         <h1 className={styles.title}>Create a new quiz</h1>
@@ -299,60 +291,64 @@ export default function CreatePage() {
                                 </button>
                               </div>
 
-                              {question.options.map((option, optionIndex) => (
-                                <div
-                                  className={styles.optionRow}
-                                  key={optionIndex}
-                                >
-                                  <input
-                                    className={styles.input}
-                                    name={`questions.${questionIndex}.options.${optionIndex}.text`}
-                                    placeholder={`Option ${optionIndex + 1}`}
-                                    value={option.text}
-                                    onChange={handleChange}
-                                  />
-
-                                  <label className={styles.checkboxLabel}>
+                              {(question.options ?? []).map(
+                                (option, optionIndex) => (
+                                  <div
+                                    className={styles.optionRow}
+                                    key={optionIndex}
+                                  >
                                     <input
-                                      type="checkbox"
-                                      checked={option.isCorrect}
-                                      onChange={(event) =>
-                                        setFieldValue(
-                                          `questions.${questionIndex}.options.${optionIndex}.isCorrect`,
-                                          event.target.checked,
-                                        )
-                                      }
+                                      className={styles.input}
+                                      name={`questions.${questionIndex}.options.${optionIndex}.text`}
+                                      placeholder={`Option ${optionIndex + 1}`}
+                                      value={option.text}
+                                      onChange={handleChange}
                                     />
-                                    Correct
-                                  </label>
 
-                                  {question.options.length > 2 && (
-                                    <button
-                                      className={styles.dangerButton}
-                                      type="button"
-                                      onClick={() => removeOption(optionIndex)}
-                                    >
-                                      Remove
-                                    </button>
-                                  )}
+                                    <label className={styles.checkboxLabel}>
+                                      <input
+                                        type="checkbox"
+                                        checked={option.isCorrect}
+                                        onChange={(event) =>
+                                          setFieldValue(
+                                            `questions.${questionIndex}.options.${optionIndex}.isCorrect`,
+                                            event.target.checked,
+                                          )
+                                        }
+                                      />
+                                      Correct
+                                    </label>
 
-                                  {getIn(
-                                    touched,
-                                    `questions.${questionIndex}.options.${optionIndex}.text`,
-                                  ) &&
-                                    getIn(
-                                      errors,
-                                      `questions.${questionIndex}.options.${optionIndex}.text`,
-                                    ) && (
-                                      <p className={styles.error}>
-                                        {getIn(
-                                          errors,
-                                          `questions.${questionIndex}.options.${optionIndex}.text`,
-                                        )}
-                                      </p>
+                                    {(question.options ?? []).length > 2 && (
+                                      <button
+                                        className={styles.dangerButton}
+                                        type="button"
+                                        onClick={() =>
+                                          removeOption(optionIndex)
+                                        }
+                                      >
+                                        Remove
+                                      </button>
                                     )}
-                                </div>
-                              ))}
+
+                                    {getIn(
+                                      touched,
+                                      `questions.${questionIndex}.options.${optionIndex}.text`,
+                                    ) &&
+                                      getIn(
+                                        errors,
+                                        `questions.${questionIndex}.options.${optionIndex}.text`,
+                                      ) && (
+                                        <p className={styles.error}>
+                                          {getIn(
+                                            errors,
+                                            `questions.${questionIndex}.options.${optionIndex}.text`,
+                                          )}
+                                        </p>
+                                      )}
+                                  </div>
+                                ),
+                              )}
 
                               {typeof getIn(
                                 errors,

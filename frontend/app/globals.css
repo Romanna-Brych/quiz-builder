@@ -21,6 +21,21 @@ textarea {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
 a {
   color: inherit;
+  text-decoration: none;
 }
