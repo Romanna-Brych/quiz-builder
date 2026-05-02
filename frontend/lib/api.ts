@@ -31,6 +31,11 @@ export type CreateQuizQuestion = {
   options?: CreateQuizOption[];
 };
 
+export type CreateQuizPayload = {
+  title: string;
+  questions: CreateQuizQuestion[];
+};
+
 export type QuizQuestion = {
   id: number;
   text: string;
@@ -46,24 +51,21 @@ export type Quiz = {
   questions: QuizQuestion[];
 };
 
-export const getQuizzes = async () => {
+export const getQuizzes = async (): Promise<QuizListItem[]> => {
   const res = await api.get<QuizListItem[]>("/quizzes");
   return res.data;
 };
 
-export const getQuizById = async (id: number) => {
+export const getQuizById = async (id: number): Promise<Quiz> => {
   const res = await api.get<Quiz>(`/quizzes/${id}`);
   return res.data;
 };
 
-export const createQuiz = async (data: {
-  title: string;
-  questions: CreateQuizQuestion[];
-}) => {
+export const createQuiz = async (data: CreateQuizPayload): Promise<Quiz> => {
   const res = await api.post<Quiz>("/quizzes", data);
   return res.data;
 };
 
-export const deleteQuiz = async (id: number) => {
+export const deleteQuiz = async (id: number): Promise<void> => {
   await api.delete(`/quizzes/${id}`);
 };

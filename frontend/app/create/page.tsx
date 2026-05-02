@@ -11,14 +11,12 @@ import {
 } from "@/lib/api";
 import styles from "./create.module.css";
 
-type Question = CreateQuizQuestion;
-
 type QuizFormValues = {
   title: string;
-  questions: Question[];
+  questions: CreateQuizQuestion[];
 };
 
-const initialQuestion: Question = {
+const initialQuestion: CreateQuizQuestion = {
   text: "",
   type: "input",
   answerText: "",
@@ -203,6 +201,8 @@ export default function CreatePage() {
                                 ? [
                                     { text: "", isCorrect: false },
                                     { text: "", isCorrect: false },
+                                    { text: "", isCorrect: false },
+                                    { text: "", isCorrect: false },
                                   ]
                                 : [],
                             );
@@ -287,7 +287,7 @@ export default function CreatePage() {
                                     pushOption({ text: "", isCorrect: false })
                                   }
                                 >
-                                  Add option
+                                  Add answer option
                                 </button>
                               </div>
 
