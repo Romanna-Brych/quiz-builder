@@ -93,7 +93,7 @@ export default function CreatePage() {
 
   return (
     <main className={styles.page}>
-      <Link href="/quizzes" className={styles.backLink}>
+      <Link href="/" className={styles.backLink}>
         ← Back
       </Link>
       <section className={styles.header}>

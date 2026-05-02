@@ -1,0 +1,151 @@
+.page {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.header {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e8ecff;
+  color: #3346a8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.description {
+  margin: 12px 0 0;
+  color: #606575;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.createLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: #151515;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #e1e4ed;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(23, 28, 45, 0.05);
+}
+
+.cardLink {
+  display: grid;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #151515;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.cardMeta {
+  margin: 0;
+  color: #606575;
+  font-size: 14px;
+}
+
+.deleteButton {
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #b42323;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.deleteButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.emptyState {
+  padding: 28px 18px;
+  border: 1px dashed #cdd3e3;
+  border-radius: 18px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.emptyState h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.emptyState p {
+  margin: 10px 0 18px;
+  color: #606575;
+}
+
+.stateText,
+.errorText {
+  margin: 0;
+  font-size: 15px;
+}
+
+.errorText {
+  color: #b42323;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding: 40px 24px 72px;
+  }
+
+  .header {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .title {
+    font-size: 48px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
