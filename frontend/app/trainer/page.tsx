@@ -34,6 +34,10 @@ const questions: Question[] = [
   },
 ];
 
+const shuffleArray = <T,>(array: T[]) => {
+  return [...array].sort(() => Math.random() - 0.5);
+};
+
 export default function TrainerPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -41,8 +45,8 @@ export default function TrainerPage() {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
   const [questionCount, setQuestionCount] = useState(3);
+  const [trainingQuestions, setTrainingQuestions] = useState<Question[]>([]);
 
-  const trainingQuestions = questions.slice(0, questionCount);
   const currentQuestion = trainingQuestions[currentQuestionIndex];
 
   const formatTime = (seconds: number) => {
@@ -65,6 +69,14 @@ export default function TrainerPage() {
   }, [isStarted, currentQuestionIndex, trainingQuestions.length]);
 
   const handleStart = () => {
+    const shuffledQuestions = shuffleArray(questions)
+      .slice(0, questionCount)
+      .map((question) => ({
+        ...question,
+        options: shuffleArray(question.options),
+      }));
+
+    setTrainingQuestions(shuffledQuestions);
     setIsStarted(true);
   };
 
