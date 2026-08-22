@@ -74,6 +74,15 @@ export default function TrainerPage() {
     setCurrentQuestionIndex((prev) => prev + 1);
   };
 
+  const handleRestart = () => {
+    setCurrentQuestionIndex(0);
+    setCorrectAnswers(0);
+    setSelectedAnswer(null);
+    setTotalSeconds(0);
+    setTrainingQuestions([]);
+    setIsStarted(false);
+  };
+
   const availableQuestionsCount = questions.filter(
     (question) => question.topic === selectedTopic,
   ).length;
@@ -100,6 +109,7 @@ export default function TrainerPage() {
         correctAnswers={correctAnswers}
         totalQuestions={trainingQuestions.length}
         totalSeconds={totalSeconds}
+        onRestart={handleRestart}
       />
     );
   }

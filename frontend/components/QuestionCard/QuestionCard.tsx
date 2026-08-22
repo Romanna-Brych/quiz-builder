@@ -1,3 +1,5 @@
+import { Box, Button, LinearProgress, Paper, Typography } from "@mui/material";
+
 import type { Question } from "@/types/question";
 
 type QuestionCardProps = {
@@ -28,50 +30,152 @@ export default function QuestionCard({
   onAnswer,
   onNext,
 }: QuestionCardProps) {
+  const progress = (currentQuestionNumber / totalQuestions) * 100;
+
+  const getAnswerColor = (option: string) => {
+    if (selectedAnswer === null) {
+      return "primary";
+    }
+
+    if (option === question.correctAnswer) {
+      return "success";
+    }
+
+    if (option === selectedAnswer) {
+      return "error";
+    }
+
+    return "primary";
+  };
+
   return (
-    <main>
-      <p>
-        Завдання {currentQuestionNumber} з {totalQuestions}
-      </p>
+    <Box
+      component="main"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 650,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Завдання {currentQuestionNumber} з {totalQuestions}
+          </Typography>
 
-      <p>Час: {formatTime(totalSeconds)}</p>
+          <Typography variant="body2" color="text.secondary">
+            Час: {formatTime(totalSeconds)}
+          </Typography>
+        </Box>
 
-      <h1>{question.text}</h1>
+        <LinearProgress variant="determinate" value={progress} sx={{ mb: 3 }} />
 
-      <div>
-        {question.options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            disabled={selectedAnswer !== null}
-            onClick={() => onAnswer(option)}
+        <Paper
+          elevation={1}
+          sx={{
+            p: {
+              xs: 2,
+              sm: 4,
+            },
+          }}
+        >
+          <Typography
+            variant="h5"
+            component="h1"
+            sx={{
+              fontWeight: 600,
+              mb: 3,
+            }}
           >
-            {option}
-          </button>
-        ))}
-      </div>
+            {question.text}
+          </Typography>
 
-      {selectedAnswer && (
-        <div>
-          <p>
-            {selectedAnswer === question.correctAnswer
-              ? "Правильно"
-              : "Неправильно"}
-          </p>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr",
+              },
+              gap: 2,
+            }}
+          >
+            {question.options.map((option) => (
+              <Button
+                key={option}
+                type="button"
+                variant={
+                  selectedAnswer === option ||
+                  (selectedAnswer !== null && option === question.correctAnswer)
+                    ? "contained"
+                    : "outlined"
+                }
+                color={getAnswerColor(option)}
+                onClick={() => onAnswer(option)}
+                sx={{
+                  minHeight: 56,
+                  textTransform: "none",
+                  fontSize: "1rem",
+                  pointerEvents: selectedAnswer !== null ? "none" : "auto",
+                }}
+              >
+                {option}
+              </Button>
+            ))}
+          </Box>
 
-          {selectedAnswer !== question.correctAnswer && (
-            <p>
-              Правильна відповідь: <strong>{question.correctAnswer}</strong>
-            </p>
+          {selectedAnswer !== null && (
+            <Box sx={{ mt: 3 }}>
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  color:
+                    selectedAnswer === question.correctAnswer
+                      ? "success.main"
+                      : "error.main",
+                }}
+              >
+                {selectedAnswer === question.correctAnswer
+                  ? "Правильно"
+                  : "Неправильно"}
+              </Typography>
+
+              {selectedAnswer !== question.correctAnswer && (
+                <Typography sx={{ mt: 1 }} color="text.secondary">
+                  Правильна відповідь: <strong>{question.correctAnswer}</strong>
+                </Typography>
+              )}
+
+              {!isUltimateMode && (
+                <Button
+                  variant="contained"
+                  type="button"
+                  onClick={onNext}
+                  sx={{
+                    mt: 3,
+                    textTransform: "none",
+                  }}
+                >
+                  Далі
+                </Button>
+              )}
+            </Box>
           )}
-
-          {!isUltimateMode && (
-            <button type="button" onClick={onNext}>
-              Далі
-            </button>
-          )}
-        </div>
-      )}
-    </main>
+        </Paper>
+      </Box>
+    </Box>
   );
 }
