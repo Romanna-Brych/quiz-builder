@@ -37,14 +37,22 @@ const questions: Question[] = [
 export default function TrainerPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
 
   const handleAnswer = (answer: string) => {
+    if (selectedAnswer !== null) return;
+
+    setSelectedAnswer(answer);
+
     if (answer === currentQuestion.correctAnswer) {
       setCorrectAnswers((prev) => prev + 1);
     }
+  };
 
+  const handleNextQuestion = () => {
+    setSelectedAnswer(null);
     setCurrentQuestionIndex((prev) => prev + 1);
   };
 
@@ -73,12 +81,34 @@ export default function TrainerPage() {
           <button
             key={option}
             type="button"
+            disabled={selectedAnswer !== null}
             onClick={() => handleAnswer(option)}
           >
             {option}
           </button>
         ))}
       </div>
+
+      {selectedAnswer && (
+        <div>
+          <p>
+            {selectedAnswer === currentQuestion.correctAnswer
+              ? "Правильно"
+              : "Неправильно"}
+          </p>
+
+          {selectedAnswer !== currentQuestion.correctAnswer && (
+            <p>
+              Правильна відповідь:{" "}
+              <strong>{currentQuestion.correctAnswer}</strong>
+            </p>
+          )}
+
+          <button type="button" onClick={handleNextQuestion}>
+            Далі
+          </button>
+        </div>
+      )}
     </main>
   );
 }
