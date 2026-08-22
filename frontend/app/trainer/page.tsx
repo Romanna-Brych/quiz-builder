@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from "react";
 
+type Topic = "elementary-math" | "algebra" | "geometry";
+
 type Question = {
   id: number;
-  topic: string;
+  topic: Topic;
   text: string;
   options: string[];
   correctAnswer: string;
+};
+
+const topicLabels: Record<Topic, string> = {
+  "elementary-math": "Елементарна математика",
+  algebra: "Алгебра",
+  geometry: "Геометрія",
 };
 
 const questions: Question[] = [
@@ -32,6 +40,50 @@ const questions: Question[] = [
     options: ["53", "63", "67", "73"],
     correctAnswer: "63",
   },
+
+  {
+    id: 4,
+    topic: "algebra",
+    text: "Розв'яжіть рівняння: x + 5 = 12",
+    options: ["5", "6", "7", "8"],
+    correctAnswer: "7",
+  },
+  {
+    id: 5,
+    topic: "algebra",
+    text: "Розв'яжіть рівняння: 2x = 16",
+    options: ["6", "7", "8", "9"],
+    correctAnswer: "8",
+  },
+  {
+    id: 6,
+    topic: "algebra",
+    text: "Розв'яжіть рівняння: x - 4 = 10",
+    options: ["6", "12", "14", "16"],
+    correctAnswer: "14",
+  },
+
+  {
+    id: 7,
+    topic: "geometry",
+    text: "Скільки градусів має прямий кут?",
+    options: ["45°", "60°", "90°", "180°"],
+    correctAnswer: "90°",
+  },
+  {
+    id: 8,
+    topic: "geometry",
+    text: "Чому дорівнює площа квадрата зі стороною 5 см?",
+    options: ["10 см²", "20 см²", "25 см²", "30 см²"],
+    correctAnswer: "25 см²",
+  },
+  {
+    id: 9,
+    topic: "geometry",
+    text: "Скільки сторін має трикутник?",
+    options: ["2", "3", "4", "5"],
+    correctAnswer: "3",
+  },
 ];
 
 const shuffleArray = <T,>(array: T[]) => {
@@ -46,6 +98,7 @@ export default function TrainerPage() {
   const [isStarted, setIsStarted] = useState(false);
   const [questionCount, setQuestionCount] = useState(3);
   const [trainingQuestions, setTrainingQuestions] = useState<Question[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<Topic>("elementary-math");
 
   const currentQuestion = trainingQuestions[currentQuestionIndex];
 
@@ -69,7 +122,11 @@ export default function TrainerPage() {
   }, [isStarted, currentQuestionIndex, trainingQuestions.length]);
 
   const handleStart = () => {
-    const shuffledQuestions = shuffleArray(questions)
+    const questionsByTopic = questions.filter(
+      (question) => question.topic === selectedTopic,
+    );
+
+    const shuffledQuestions = shuffleArray(questionsByTopic)
       .slice(0, questionCount)
       .map((question) => ({
         ...question,
@@ -95,6 +152,10 @@ export default function TrainerPage() {
     setCurrentQuestionIndex((prev) => prev + 1);
   };
 
+  const availableQuestionsCount = questions.filter(
+    (question) => question.topic === selectedTopic,
+  ).length;
+
   if (!isStarted) {
     return (
       <main>
@@ -103,8 +164,16 @@ export default function TrainerPage() {
         <div>
           <label htmlFor="topic">Оберіть тему:</label>
 
-          <select id="topic" disabled>
-            <option>Елементарна математика</option>
+          <select
+            id="topic"
+            value={selectedTopic}
+            onChange={(event) => setSelectedTopic(event.target.value as Topic)}
+          >
+            {Object.entries(topicLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -115,7 +184,7 @@ export default function TrainerPage() {
             id="questionCount"
             type="number"
             min="1"
-            max={questions.length}
+            max={availableQuestionsCount}
             value={questionCount}
             onChange={(event) => setQuestionCount(Number(event.target.value))}
           />
