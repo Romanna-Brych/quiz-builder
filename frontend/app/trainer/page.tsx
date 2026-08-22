@@ -99,6 +99,7 @@ export default function TrainerPage() {
   const [questionCount, setQuestionCount] = useState(3);
   const [trainingQuestions, setTrainingQuestions] = useState<Question[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<Topic>("elementary-math");
+  const [isUltimateMode, setIsUltimateMode] = useState(false);
 
   const currentQuestion = trainingQuestions[currentQuestionIndex];
 
@@ -145,6 +146,13 @@ export default function TrainerPage() {
     if (answer === currentQuestion.correctAnswer) {
       setCorrectAnswers((prev) => prev + 1);
     }
+
+    if (isUltimateMode) {
+      setTimeout(() => {
+        setSelectedAnswer(null);
+        setCurrentQuestionIndex((prev) => prev + 1);
+      }, 1500);
+    }
   };
 
   const handleNextQuestion = () => {
@@ -167,7 +175,10 @@ export default function TrainerPage() {
           <select
             id="topic"
             value={selectedTopic}
-            onChange={(event) => setSelectedTopic(event.target.value as Topic)}
+            onChange={(event) => {
+              setSelectedTopic(event.target.value as Topic);
+              setQuestionCount(1);
+            }}
           >
             {Object.entries(topicLabels).map(([value, label]) => (
               <option key={value} value={value}>
@@ -189,6 +200,15 @@ export default function TrainerPage() {
             onChange={(event) => setQuestionCount(Number(event.target.value))}
           />
         </div>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={isUltimateMode}
+            onChange={(event) => setIsUltimateMode(event.target.checked)}
+          />
+          Ultimate режим
+        </label>
 
         <button type="button" onClick={handleStart}>
           Почати
@@ -252,9 +272,11 @@ export default function TrainerPage() {
             </p>
           )}
 
-          <button type="button" onClick={handleNextQuestion}>
-            Далі
-          </button>
+          {!isUltimateMode && (
+            <button type="button" onClick={handleNextQuestion}>
+              Далі
+            </button>
+          )}
         </div>
       )}
     </main>
