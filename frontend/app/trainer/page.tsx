@@ -1,90 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-type Topic = "elementary-math" | "algebra" | "geometry";
-
-type Question = {
-  id: number;
-  topic: Topic;
-  text: string;
-  options: string[];
-  correctAnswer: string;
-};
-
-const topicLabels: Record<Topic, string> = {
-  "elementary-math": "Елементарна математика",
-  algebra: "Алгебра",
-  geometry: "Геометрія",
-};
-
-const questions: Question[] = [
-  {
-    id: 1,
-    topic: "elementary-math",
-    text: "15 + 27 = ?",
-    options: ["40", "41", "42", "43"],
-    correctAnswer: "42",
-  },
-  {
-    id: 2,
-    topic: "elementary-math",
-    text: "8 × 7 = ?",
-    options: ["54", "56", "58", "64"],
-    correctAnswer: "56",
-  },
-  {
-    id: 3,
-    topic: "elementary-math",
-    text: "100 - 37 = ?",
-    options: ["53", "63", "67", "73"],
-    correctAnswer: "63",
-  },
-
-  {
-    id: 4,
-    topic: "algebra",
-    text: "Розв'яжіть рівняння: x + 5 = 12",
-    options: ["5", "6", "7", "8"],
-    correctAnswer: "7",
-  },
-  {
-    id: 5,
-    topic: "algebra",
-    text: "Розв'яжіть рівняння: 2x = 16",
-    options: ["6", "7", "8", "9"],
-    correctAnswer: "8",
-  },
-  {
-    id: 6,
-    topic: "algebra",
-    text: "Розв'яжіть рівняння: x - 4 = 10",
-    options: ["6", "12", "14", "16"],
-    correctAnswer: "14",
-  },
-
-  {
-    id: 7,
-    topic: "geometry",
-    text: "Скільки градусів має прямий кут?",
-    options: ["45°", "60°", "90°", "180°"],
-    correctAnswer: "90°",
-  },
-  {
-    id: 8,
-    topic: "geometry",
-    text: "Чому дорівнює площа квадрата зі стороною 5 см?",
-    options: ["10 см²", "20 см²", "25 см²", "30 см²"],
-    correctAnswer: "25 см²",
-  },
-  {
-    id: 9,
-    topic: "geometry",
-    text: "Скільки сторін має трикутник?",
-    options: ["2", "3", "4", "5"],
-    correctAnswer: "3",
-  },
-];
+import type { Question, Topic } from "@/types/question";
+import { questions, topicLabels } from "@/data/questions";
+import TrainerSettings from "../../components/TrainerSettings/TrainerSettings";
+import TrainerResults from "../../components/TrainerResults/TrainerResults";
+import QuestionCard from "@/components/QuestionCard/QuestionCard";
 
 const shuffleArray = <T,>(array: T[]) => {
   return [...array].sort(() => Math.random() - 0.5);
@@ -102,13 +23,6 @@ export default function TrainerPage() {
   const [isUltimateMode, setIsUltimateMode] = useState(false);
 
   const currentQuestion = trainingQuestions[currentQuestionIndex];
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
 
   useEffect(() => {
     if (!isStarted || currentQuestionIndex >= trainingQuestions.length) {
@@ -166,119 +80,40 @@ export default function TrainerPage() {
 
   if (!isStarted) {
     return (
-      <main>
-        <h1>Математичний тренажер</h1>
-
-        <div>
-          <label htmlFor="topic">Оберіть тему:</label>
-
-          <select
-            id="topic"
-            value={selectedTopic}
-            onChange={(event) => {
-              setSelectedTopic(event.target.value as Topic);
-              setQuestionCount(1);
-            }}
-          >
-            {Object.entries(topicLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="questionCount">Кількість завдань:</label>
-
-          <input
-            id="questionCount"
-            type="number"
-            min="1"
-            max={availableQuestionsCount}
-            value={questionCount}
-            onChange={(event) => setQuestionCount(Number(event.target.value))}
-          />
-        </div>
-
-        <label>
-          <input
-            type="checkbox"
-            checked={isUltimateMode}
-            onChange={(event) => setIsUltimateMode(event.target.checked)}
-          />
-          Ultimate режим
-        </label>
-
-        <button type="button" onClick={handleStart}>
-          Почати
-        </button>
-      </main>
+      <TrainerSettings
+        selectedTopic={selectedTopic}
+        questionCount={questionCount}
+        isUltimateMode={isUltimateMode}
+        availableQuestionsCount={availableQuestionsCount}
+        topicLabels={topicLabels}
+        onTopicChange={setSelectedTopic}
+        onQuestionCountChange={setQuestionCount}
+        onUltimateModeChange={setIsUltimateMode}
+        onStart={handleStart}
+      />
     );
   }
 
   if (currentQuestionIndex >= trainingQuestions.length) {
-    const averageTime = totalSeconds / trainingQuestions.length;
-
     return (
-      <main>
-        <h1>Тренування завершено</h1>
-
-        <p>
-          Правильних відповідей: {correctAnswers} / {trainingQuestions.length}
-        </p>
-
-        <p>Загальний час: {formatTime(totalSeconds)}</p>
-        <p>Середній час: {averageTime.toFixed(1)} с</p>
-      </main>
+      <TrainerResults
+        correctAnswers={correctAnswers}
+        totalQuestions={trainingQuestions.length}
+        totalSeconds={totalSeconds}
+      />
     );
   }
 
   return (
-    <main>
-      <p>
-        Завдання {currentQuestionIndex + 1} з {trainingQuestions.length}
-      </p>
-
-      <p>Час: {formatTime(totalSeconds)}</p>
-
-      <h1>{currentQuestion.text}</h1>
-
-      <div>
-        {currentQuestion.options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            disabled={selectedAnswer !== null}
-            onClick={() => handleAnswer(option)}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-
-      {selectedAnswer && (
-        <div>
-          <p>
-            {selectedAnswer === currentQuestion.correctAnswer
-              ? "Правильно"
-              : "Неправильно"}
-          </p>
-
-          {selectedAnswer !== currentQuestion.correctAnswer && (
-            <p>
-              Правильна відповідь:{" "}
-              <strong>{currentQuestion.correctAnswer}</strong>
-            </p>
-          )}
-
-          {!isUltimateMode && (
-            <button type="button" onClick={handleNextQuestion}>
-              Далі
-            </button>
-          )}
-        </div>
-      )}
-    </main>
+    <QuestionCard
+      question={currentQuestion}
+      currentQuestionNumber={currentQuestionIndex + 1}
+      totalQuestions={trainingQuestions.length}
+      totalSeconds={totalSeconds}
+      selectedAnswer={selectedAnswer}
+      isUltimateMode={isUltimateMode}
+      onAnswer={handleAnswer}
+      onNext={handleNextQuestion}
+    />
   );
 }
