@@ -1,4 +1,9 @@
-export type Topic = "elementary-math" | "algebra" | "geometry";
+export type Topic =
+  | "elementary-math"
+  | "algebra"
+  | "geometry"
+  | "functions"
+  | "probability";
 
 export type Question = {
   id: number;

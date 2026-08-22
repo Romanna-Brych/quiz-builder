@@ -7,8 +7,9 @@ import {
   MenuItem,
   Select,
   Switch,
-  TextField,
   Typography,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 
 import type { Topic } from "@/types/question";
@@ -17,7 +18,6 @@ type TrainerSettingsProps = {
   selectedTopic: Topic;
   questionCount: number;
   isUltimateMode: boolean;
-  availableQuestionsCount: number;
   topicLabels: Record<Topic, string>;
   onTopicChange: (topic: Topic) => void;
   onQuestionCountChange: (count: number) => void;
@@ -29,7 +29,6 @@ export default function TrainerSettings({
   selectedTopic,
   questionCount,
   isUltimateMode,
-  availableQuestionsCount,
   topicLabels,
   onTopicChange,
   onQuestionCountChange,
@@ -70,7 +69,7 @@ export default function TrainerSettings({
             label="Тема"
             onChange={(event) => {
               onTopicChange(event.target.value as Topic);
-              onQuestionCountChange(1);
+              onQuestionCountChange(5);
             }}
           >
             {Object.entries(topicLabels).map(([value, label]) => (
@@ -81,21 +80,31 @@ export default function TrainerSettings({
           </Select>
         </FormControl>
 
-        <TextField
-          label="Кількість завдань"
-          type="number"
-          value={questionCount}
-          slotProps={{
-            htmlInput: {
-              min: 1,
-              max: availableQuestionsCount,
-            },
-          }}
-          onChange={(event) =>
-            onQuestionCountChange(Number(event.target.value))
-          }
-          fullWidth
-        />
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 1,
+              color: "text.secondary",
+            }}
+          >
+            Кількість завдань
+          </Typography>
+
+          <ToggleButtonGroup
+            value={questionCount}
+            exclusive
+            fullWidth
+            onChange={(_, value: number | null) => {
+              if (value !== null) {
+                onQuestionCountChange(value);
+              }
+            }}
+          >
+            <ToggleButton value={5}>5</ToggleButton>
+            <ToggleButton value={10}>10</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
         <FormControlLabel
           control={

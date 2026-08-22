@@ -83,17 +83,12 @@ export default function TrainerPage() {
     setIsStarted(false);
   };
 
-  const availableQuestionsCount = questions.filter(
-    (question) => question.topic === selectedTopic,
-  ).length;
-
   if (!isStarted) {
     return (
       <TrainerSettings
         selectedTopic={selectedTopic}
         questionCount={questionCount}
         isUltimateMode={isUltimateMode}
-        availableQuestionsCount={availableQuestionsCount}
         topicLabels={topicLabels}
         onTopicChange={setSelectedTopic}
         onQuestionCountChange={setQuestionCount}
