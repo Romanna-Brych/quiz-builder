@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Question = {
   id: number;
@@ -38,8 +38,35 @@ export default function TrainerPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  const [isStarted, setIsStarted] = useState(false);
+  const [questionCount, setQuestionCount] = useState(3);
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const trainingQuestions = questions.slice(0, questionCount);
+  const currentQuestion = trainingQuestions[currentQuestionIndex];
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  useEffect(() => {
+    if (!isStarted || currentQuestionIndex >= trainingQuestions.length) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTotalSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isStarted, currentQuestionIndex, trainingQuestions.length]);
+
+  const handleStart = () => {
+    setIsStarted(true);
+  };
 
   const handleAnswer = (answer: string) => {
     if (selectedAnswer !== null) return;
@@ -56,14 +83,52 @@ export default function TrainerPage() {
     setCurrentQuestionIndex((prev) => prev + 1);
   };
 
-  if (currentQuestionIndex >= questions.length) {
+  if (!isStarted) {
+    return (
+      <main>
+        <h1>Математичний тренажер</h1>
+
+        <div>
+          <label htmlFor="topic">Оберіть тему:</label>
+
+          <select id="topic" disabled>
+            <option>Елементарна математика</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="questionCount">Кількість завдань:</label>
+
+          <input
+            id="questionCount"
+            type="number"
+            min="1"
+            max={questions.length}
+            value={questionCount}
+            onChange={(event) => setQuestionCount(Number(event.target.value))}
+          />
+        </div>
+
+        <button type="button" onClick={handleStart}>
+          Почати
+        </button>
+      </main>
+    );
+  }
+
+  if (currentQuestionIndex >= trainingQuestions.length) {
+    const averageTime = totalSeconds / trainingQuestions.length;
+
     return (
       <main>
         <h1>Тренування завершено</h1>
 
         <p>
-          Правильних відповідей: {correctAnswers} / {questions.length}
+          Правильних відповідей: {correctAnswers} / {trainingQuestions.length}
         </p>
+
+        <p>Загальний час: {formatTime(totalSeconds)}</p>
+        <p>Середній час: {averageTime.toFixed(1)} с</p>
       </main>
     );
   }
@@ -71,8 +136,10 @@ export default function TrainerPage() {
   return (
     <main>
       <p>
-        Завдання {currentQuestionIndex + 1} з {questions.length}
+        Завдання {currentQuestionIndex + 1} з {trainingQuestions.length}
       </p>
+
+      <p>Час: {formatTime(totalSeconds)}</p>
 
       <h1>{currentQuestion.text}</h1>
 
